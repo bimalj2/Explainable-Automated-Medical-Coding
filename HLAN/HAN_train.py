@@ -648,7 +648,7 @@ def main(_):
             
             prediction_str = ""
             # output final predictions for qualitative analysis (with attention visualisation)
-            if FLAGS.report_rand_pred:
+            if FLAGS.report_rand_pred == True:
                 if FLAGS.per_label_attention: # to do for per_label_sent_only
                     prediction_str = display_for_qualitative_evaluation_per_label(sess,model,label_sim_mat,label_sub_mat,testX,testY,batch_size,vocabulary_index2word,vocabulary_index2word_label,threshold=FLAGS.pred_threshold,use_random_sampling=FLAGS.use_random_sampling) #default as not using random sampling, that is, to display all results with attention weights (for small test set)
                 else:
@@ -775,9 +775,11 @@ def assign_pretrained_word_embedding(sess,vocabulary_index2word,vocab_size,model
     word2vec_dict = {}
     #for word, vector in zip(word2vec_model.vocab, word2vec_model.vectors): # for danielfrg's word2vec models
     #    word2vec_dict[word] = vector # for danielfrg's word2vec models
-    for _, word in enumerate(word2vec_model.wv.vocab):
-        word2vec_dict[word] = word2vec_model.wv[word]
-        
+    # for _, word in enumerate(word2vec_model.wv.vocab):
+    #     word2vec_dict[word] = word2vec_model.wv[word]
+    for word in word2vec_model.wv.index_to_key:
+        word2vec_dict[word] = word2vec_model.wv.get_vector(word)
+
     word_embedding_2dlist = [[]] * vocab_size  # create an empty word_embedding list: which is a list of list, i.e. a list of word, where each word is a list of values as an embedding vector.
     word_embedding_2dlist[0] = np.zeros(FLAGS.embed_size)  # assign empty for first word:'PAD'
     bound = np.sqrt(6.0) / np.sqrt(vocab_size)  # bound for random variables.
@@ -822,9 +824,9 @@ def assign_pretrained_label_embedding(sess,vocabulary_index2word_label,model,num
     word2vec_model_labels = Word2Vec.load(label_embedding_model_path) # for gensim word2vec models
     
     word2vec_dict_labels = {}
-    for _, label in enumerate(word2vec_model_labels.wv.vocab):
-        word2vec_dict_labels[label] = word2vec_model_labels.wv[label]
-    
+    for label in word2vec_model_labels.wv.index_to_key:
+        word2vec_dict_labels[label] = word2vec_model_labels.wv.get_vector(label)
+
     num_classes = len(vocabulary_index2word_label)
     label_embedding_2dlist = [[]] * num_classes  # create an empty word_embedding list: which is a list of list, i.e. a list of word, where each word is a list of values as an embedding vector.
     bound = np.sqrt(6.0) / np.sqrt(num_classes + FLAGS.embed_size * 4)  # bound for random variables for Xavier initialisation.
@@ -861,9 +863,9 @@ def assign_pretrained_label_embedding_per_label(sess,vocabulary_index2word_label
     word2vec_model_labels = Word2Vec.load(label_embedding_model_path) # for gensim word2vec models
     
     word2vec_dict_labels = {}
-    for _, label in enumerate(word2vec_model_labels.wv.vocab):
-        word2vec_dict_labels[label] = word2vec_model_labels.wv[label]
-    
+    for label in word2vec_model_labels.wv.index_to_key:
+        word2vec_dict_labels[label] = word2vec_model_labels.wv.get_vector(label)
+
     num_classes = len(vocabulary_index2word_label)
     label_embedding_2dlist = [[]] * num_classes  # create an empty word_embedding list: which is a list of list, i.e. a list of word, where each word is a list of values as an embedding vector.
     bound = np.sqrt(6.0) / np.sqrt(num_classes + FLAGS.embed_size * 4)  # bound for random variables for Xavier initialisation.
